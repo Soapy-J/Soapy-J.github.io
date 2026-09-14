@@ -1,0 +1,122 @@
+media:
+  - name: images
+    label: Photos
+    input: public/images
+    output: /images
+    categories: [image]
+    extensions: [jpg, jpeg, png, webp, avif]
+    rename: safe
+
+content:
+  - name: posts
+    label: Journal posts
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename: "{year}-{month}-{day}-{title}.md"
+    view:
+      fields: [title, pubDate, location, draft]
+      primary: title
+      sort: [pubDate, title]
+      search: [title, description, location, country, tags]
+      default:
+        sort: pubDate
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: description
+        label: Short summary
+        type: text
+        required: true
+        description: Shown on the home page and used for search/social previews.
+      - name: pubDate
+        label: Date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: location
+        label: Place
+        type: string
+        description: e.g. Vallon-Pont-d'Arc
+      - name: country
+        label: Country
+        type: string
+      - name: latitude
+        label: Latitude
+        type: number
+        description: Optional. Add this and longitude to put the post on the map.
+      - name: longitude
+        label: Longitude
+        type: number
+        description: Optional. Add this and latitude to put the post on the map.
+      - name: cover
+        label: Cover photo
+        type: image
+        options:
+          media: images
+          rename: safe
+      - name: gallery
+        label: Photo gallery
+        type: image
+        options:
+          media: images
+          multiple:
+            max: 30
+          unique: true
+          rename: safe
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: draft
+        label: Draft
+        type: boolean
+        default: false
+      - name: body
+        label: Post
+        type: rich-text
+        options:
+          format: markdown
+          media: images
+          rename: safe
+          switcher: false
+
+  - name: site
+    label: Site settings
+    type: file
+    path: src/data/site.json
+    fields:
+      - name: title
+        label: Site title
+        type: string
+        required: true
+      - name: strapline
+        label: Strapline
+        type: string
+        required: true
+      - name: intro
+        label: Home page introduction
+        type: text
+        required: true
+      - name: about
+        label: About Tania
+        type: text
+        required: true
+      - name: footer
+        label: Footer line
+        type: string
+
+settings:
+  content:
+    merge: true
+  commit:
+    identity: user
+    templates:
+      create: "Add {name} via Pages CMS"
+      update: "Update {name} via Pages CMS"
+      delete: "Delete {name} via Pages CMS"
+      rename: "Rename {oldFilename} to {newFilename} via Pages CMS"

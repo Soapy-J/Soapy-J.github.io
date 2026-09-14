@@ -1,0 +1,29 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+interface Props { post: CollectionEntry<'posts'>; }
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, pubDate, location, country, cover, gallery, tags } = post.data;
+const formatted = pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const place = [location, country].filter(Boolean).join(', ');
+---
+<BaseLayout title={title} description={description} image={cover}>
+  <header class="article-header narrow">
+    <div class="eyebrow">{place || 'Travel note'}</div>
+    <h1>{title}</h1>
+    <div class="article-meta"><span>{formatted}</span>{place && <><span>•</span><span>{place}</span></>}</div>
+  </header>
+  {cover && <img class="article-hero" src={cover} alt="" />}
+  <article class="narrow prose">
+    <Content />
+    {tags.length > 0 && <div class="tags">{tags.map((tag) => <span class="tag">{tag}</span>)}</div>}
+  </article>
+  {gallery.length > 0 && <div class="gallery">{gallery.map((image) => <img src={image} alt="" loading="lazy" />)}</div>}
+</BaseLayout>

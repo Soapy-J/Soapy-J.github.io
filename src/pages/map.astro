@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.latitude !== undefined && data.longitude !== undefined))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const markers = posts.map((post) => ({
+  title: post.data.title,
+  location: [post.data.location, post.data.country].filter(Boolean).join(', '),
+  lat: post.data.latitude,
+  lng: post.data.longitude,
+  href: `/journal/${post.id}/`
+}));
+---
+<BaseLayout title="Map" description="A map of places from Tania's travel journal.">
+  <section class="page-head">
+    <div class="container">
+      <div class="eyebrow">Places</div>
+      <h1>Map of the journey</h1>
+      <p>Every journal entry with coordinates appears here automatically.</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:18px">
+    <div class="container">
+      {markers.length > 0 ? (
+        <>
+          <div id="travel-map" data-markers={JSON.stringify(markers)}></div>
+          <div class="map-list">
+            {posts.map((post) => <div class="map-place"><strong>{post.data.location || post.data.country || 'Somewhere'}</strong><br/><a href={`/journal/${post.id}/`}>{post.data.title} →</a></div>)}
+          </div>
+        </>
+      ) : <div class="about-card"><h2>No pins yet</h2><p>Add latitude and longitude to a post in Pages CMS and it will appear here.</p></div>}
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  const el = document.getElementById('travel-map');
+  if (el) {
+    const markers: Array<{ title: string; location: string; lat: number; lng: number; href: string }> = JSON.parse(el.dataset.markers || '[]');
+    const map = L.map(el, { scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const bounds: [number, number][] = [];
+    markers.forEach((item) => {
+      const icon = L.divIcon({ className: '', html: '<div class="map-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+      const marker = L.marker([item.lat, item.lng], { icon }).addTo(map);
+      const safeTitle = String(item.title).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      const safeLocation = String(item.location || '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      marker.bindPopup(`<strong>${safeTitle}</strong><br>${safeLocation}<br><a href="${item.href}">Read post →</a>`);
+      bounds.push([item.lat, item.lng]);
+    });
+
+    if (bounds.length === 1) map.setView(bounds[0], 8);
+    else map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+  }
+</script>

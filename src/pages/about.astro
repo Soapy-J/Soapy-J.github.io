@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import site from '../data/site.json';
+---
+<BaseLayout title="About" description={`About ${site.title}.`}>
+  <section class="page-head">
+    <div class="container">
+      <div class="eyebrow">Hello</div>
+      <h1>About Tania</h1>
+    </div>
+  </section>
+  <section class="section" style="padding-top:16px">
+    <div class="container about-card">
+      <h2>A notebook for the road</h2>
+      <p>{site.about}</p>
+      <p>You can change this text any time from the CMS under <strong>Site settings</strong>.</p>
+    </div>
+  </section>
+</BaseLayout>

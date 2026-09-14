@@ -1,0 +1,18 @@
+---
+import type { CollectionEntry } from 'astro:content';
+interface Props { post: CollectionEntry<'posts'>; }
+const { post } = Astro.props;
+const { title, description, pubDate, location, country, cover } = post.data;
+const place = [location, country].filter(Boolean).join(', ');
+const formatted = pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+<article class="post-card">
+  <a href={`/journal/${post.id}/`}>
+    {cover ? <img class="post-cover" src={cover} alt="" loading="lazy" /> : <div class="post-cover-fallback" aria-hidden="true"></div>}
+    <div class="card-body">
+      <div class="card-meta">{place || 'On the road'} · {formatted}</div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  </a>
+</article>
